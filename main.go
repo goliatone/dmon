@@ -30,16 +30,16 @@ func main() {
 	})
 
 	//Handle messages
-	server.OnNewMessage(func(c *tcp_server.Client, message string) {
+	server.OnNewMessage(func(c *tcp_server.Client, payload string) {
 		//new message here!
-		message = strings.Trim(message, "\n")
-		log.Printf("Command received: \"%s\"", message)
+		payload = strings.Trim(payload, "\n")
+		log.Printf("Command received: \"%s\"", payload)
 
-		active, _, message := health.Exec(message)
+		response := health.Exec(payload)
 
-		log.Println(message)
+		log.Println(response.Message)
 
-		if active == false {
+		if response.Success == false {
 			c.Send("KO\n")
 			return
 		}
