@@ -14,6 +14,13 @@ type Payload struct {
 	action      string
 }
 
+//Response struct
+type Response struct {
+	StatusCode int
+	Message    string
+	Success    bool
+}
+
 //Parse payload
 //TODO: maybe move this out, check first component
 //for actual type check and then the rest would arguments
@@ -27,7 +34,7 @@ func (p *Payload) Parse() {
 }
 
 //Exec docker container health check
-func Exec(arguments string) (bool, int, string) {
+func Exec(arguments string) Response {
 
 	payload := parsePayload(arguments)
 
@@ -37,7 +44,7 @@ func Exec(arguments string) (bool, int, string) {
 
 	if err != nil {
 		message := fmt.Sprintf("UNKNOWN - The container \"%s\" does not exist.", payload.containerID)
-		return false, 3, message
+		return Response{Success: false, StatusCode: 3, Message: message}
 	}
 
 	s := byteToString(out)
@@ -45,7 +52,7 @@ func Exec(arguments string) (bool, int, string) {
 
 	if b == false {
 		message := fmt.Sprintf("CRITICAL - The container \"%s\" is not running.", payload.containerID)
-		return false, 2, message
+		return Response{Success: false, StatusCode: 2, Message: message}
 	}
 
 	if b == true {
@@ -54,7 +61,7 @@ func Exec(arguments string) (bool, int, string) {
 
 		if err != nil {
 			errorMessage := fmt.Sprintf("Unknown error: %s", err)
-			return false, 4, errorMessage
+			return Response{Success: false, StatusCode: 4, Message: errorMessage}
 		}
 
 		network := byteToString(out)
@@ -64,16 +71,14 @@ func Exec(arguments string) (bool, int, string) {
 
 		if err != nil {
 			errorMessage := fmt.Sprintf("Unknown error: %s", err)
-			return false, 4, errorMessage
+			return Response{Success: false, StatusCode: 4, Message: errorMessage}
 		}
 
 		started := byteToString(out)
 		message := fmt.Sprintf("OK - The container \"%s\" is running. IP: %s, StartedAt: %s", payload.containerID, started, network)
-
-		return true, 0, message
+		return Response{Success: true, StatusCode: 0, Message: message}
 	}
-
-	return false, 5, "Unknown error"
+	return Response{Success: false, StatusCode: 5, Message: "Unknown error"}
 }
 
 func parsePayload(arguments string) Payload {
