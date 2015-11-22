@@ -15,6 +15,10 @@ type Payload struct {
 }
 
 //Parse payload
+//TODO: maybe move this out, check first component
+//for actual type check and then the rest would arguments
+//in array form. So we could call this Exec from argv or
+//whatever.
 func (p *Payload) Parse() {
 	arguments := p.arguments
 	chunks := strings.Split(arguments, ":")
