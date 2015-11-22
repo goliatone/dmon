@@ -1,25 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/firstrow/tcp_server"
-	"github.com/goliatone/dmon/data"
 	"github.com/goliatone/dmon/health"
 )
-
-func init() {
-	//Retrieve the check bash script and restore it
-	err := data.RestoreAsset(".", "bin/check")
-
-	if err != nil {
-		log.Println("Error creating asset", err)
-		os.Exit(1)
-	}
-}
 
 func main() {
 	server := tcp_server.New("localhost:9386")
@@ -53,23 +40,4 @@ func main() {
 	})
 
 	server.Listen()
-}
-
-func getPwd() string {
-	pwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-	}
-	return pwd
-}
-
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return true, err
 }
