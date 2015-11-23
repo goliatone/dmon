@@ -11,13 +11,4 @@ chmod +x /opt/dmon
 cp /opt/dmon.conf /etc/init/dmon.conf
 cp /opt/dmon.log /etc/logrotate.d/dmon
 
-#we should do some sort of syntax check:
-expected="File /etc/init/dmon.conf"
-output=$(init-checkconf /etc/init/dmon.conf)
-
-if [[ $output == $expected]]; then
-    echo "Staring service..."
-    initctl start dmon
-else
-    echo "Unable to start service..."
-fi
+initctl start dmon
