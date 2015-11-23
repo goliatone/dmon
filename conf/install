@@ -1,0 +1,23 @@
+#!/bin/sh
+
+cd /opt
+
+wget https://s3.amazonaws.com/vecna.io/ubuntu/dmon
+wget https://s3.amazonaws.com/vecna.io/ubuntu/dmon.conf
+wget https://s3.amazonaws.com/vecna.io/ubuntu/dmon.log
+
+chmod +x /opt/dmon
+
+cp /opt/dmon.conf /etc/init/dmon.conf
+cp /opt/dmon.log /etc/logrotate.d/dmon
+
+#we should do some sort of syntax check:
+expected="File /etc/init/dmon.conf"
+output="$(init-checkconf /etc/init/dmon.conf)"
+
+if [[ $output == $expected]]; then
+    echo "Staring service..."
+    initctl start dmon
+else
+    echo "Unable to start service..."
+fi
