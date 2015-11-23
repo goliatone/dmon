@@ -3,15 +3,16 @@ package health
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
 )
 
 const (
-	inspectRunning = "inspect --format={{.State.Running}}"
-	inspectStarted = "inspect --format={{.State.StartedAt}}"
-	inspectNetwork = "inspect --format={{.NetworkSettings.IPAddress}}"
+	inspectRunning = "docker inspect --format={{.State.Running}} "
+	inspectStarted = "docker inspect --format={{.State.StartedAt}} "
+	inspectNetwork = "docker inspect --format={{.NetworkSettings.IPAddress}} "
 )
 
 //Payload struct
@@ -57,10 +58,12 @@ func Exec(arguments string) (Response, error) {
 	}
 
 	//wat
-	cmd := exec.Command("docker", inspectRunning, payload.Target)
-	out, err := cmd.CombinedOutput()
+	out, err := exec.Command("sh", "-c",
+		inspectRunning+payload.Target).CombinedOutput()
 
 	if err != nil {
+		log.Println(err)
+		log.Printf("%s", out)
 		message := fmt.Sprintf("UNKNOWN - The container \"%s\" does not exist.", payload.Target)
 		return Response{Success: false, StatusCode: 3, Message: message}, nil
 	}
@@ -68,35 +71,37 @@ func Exec(arguments string) (Response, error) {
 	s := byteToString(out)
 	b, err := strconv.ParseBool(s)
 
+	if err != nil {
+		return Response{}, errors.New("Health check unexpected command response.")
+	}
+
 	if b == false {
 		message := fmt.Sprintf("CRITICAL - The container \"%s\" is not running.", payload.Target)
 		return Response{Success: false, StatusCode: 2, Message: message}, nil
 	}
 
-	if b == true {
-		cmd := exec.Command("docker", inspectStarted, payload.Target)
-		out, err := cmd.CombinedOutput()
+	out, err = exec.Command("sh", "-c",
+		inspectStarted+payload.Target).CombinedOutput()
 
-		if err != nil {
-			errorMessage := fmt.Sprintf("Unknown error: %s", err)
-			return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
-		}
-
-		network := byteToString(out)
-
-		cmd = exec.Command("docker", inspectNetwork, payload.Target)
-		out, err = cmd.CombinedOutput()
-
-		if err != nil {
-			errorMessage := fmt.Sprintf("Unknown error: %s", err)
-			return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
-		}
-
-		started := byteToString(out)
-		message := fmt.Sprintf("OK - The container \"%s\" is running. IP: %s, StartedAt: %s", payload.Target, started, network)
-		return Response{Success: true, StatusCode: 0, Message: message}, nil
+	if err != nil {
+		errorMessage := fmt.Sprintf("Unknown error: %s", err)
+		return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
 	}
-	return Response{}, errors.New("Health check unhandled.")
+
+	network := byteToString(out)
+
+	out, err = exec.Command("sh", "-c",
+		inspectNetwork+payload.Target).CombinedOutput()
+
+	if err != nil {
+		errorMessage := fmt.Sprintf("Unknown error: %s", err)
+		return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
+	}
+
+	started := byteToString(out)
+	message := fmt.Sprintf("OK - The container \"%s\" is running. IP: %s, StartedAt: %s", payload.Target, started, network)
+
+	return Response{Success: true, StatusCode: 0, Message: message}, nil
 }
 
 func parsePayload(arguments string) (Payload, error) {
