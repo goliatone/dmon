@@ -22,35 +22,38 @@ func main() {
 	connectionAddress := fmt.Sprintf("localhost:%s", port)
 	server := tcp_server.New(connectionAddress)
 
-	//Handle new clients
 	server.OnNewClient(func(c *tcp_server.Client) {
-		//New client just connected
-		// c.Send("")
 		log.Println("New client joined")
 	})
 
-	//Handle messages
 	server.OnNewMessage(func(c *tcp_server.Client, payload string) {
-		//new message here!
 		payload = strings.Trim(payload, "\n")
+
 		log.Printf("Command received: \"%s\"", payload)
 
-		response := health.Exec(payload)
+		//A) Parse payload.
+		//B) Get handler from payload
 
-		log.Println(response.Message)
+		//C) Execute handler
+		response, err := health.Exec(payload)
 
-		if response.Success == false {
+		if err != nil {
+			log.Printf("Error executing health check: %s", err)
 			c.Send("KO\n")
 			return
 		}
 
-		c.Send("OK\n")
+		log.Println(response.Message)
 
+		if response.Success {
+			c.Send("OK\n")
+			return
+		}
+
+		c.Send("KO\n")
 	})
 
-	//Handle connection closed
 	server.OnClientConnectionClosed(func(c *tcp_server.Client, err error) {
-		//connection lost
 		log.Println("Client left")
 	})
 
