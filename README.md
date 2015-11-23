@@ -1,4 +1,11 @@
 
+## TODO
+
+Handle multiple containers per command:
+
+```
+docker:container1|container2|container3|container4
+```
 
 ## Development
 Install dependencies.
