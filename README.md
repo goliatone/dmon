@@ -55,6 +55,42 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 ed8bc298f850        b8e8e082f4e5        "node app.js"       About an hour ago   Up About an hour    0.0.0.0:1337->1337/tcp   menagerie
 ```
 
+## Deployment
+Modify docker to run without sudo, on EC2 box:
+
+```
+sudo usermod -a -G docker ec2-user
+```
+
+Add upstart `dmon.conf` file. Read more on the [upstart cookbook][uc]
 
 
+
+Add logrotate conf file, `/etc/logrotate.d/dmon`:
+
+```
+/var/log/dmon.log {
+    weekly
+    size 20M
+    missingok
+    rotate 52
+    notifempty
+    nocreate
+}
+```
+Ensure `crond` is up and running all the time:
+```
+# chkconfig --list crond
+# chkconfig crond on
+```
+
+Else:
+```
+# /etc/init.d/crond start
+```
+
+<!--
 https://github.com/go-godo/godo
+-->
+
+[uc]: http://upstart.ubuntu.com/cookbook/#pre-start-example-debian-and-ubuntu-specific
