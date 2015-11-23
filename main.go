@@ -19,7 +19,7 @@ func main() {
 
 	log.Println("Starting up dmon")
 
-	connectionAddress := fmt.Sprintf("localhost:%s", port)
+	connectionAddress := fmt.Sprintf("0.0.0.0:%s", port)
 	server := tcp_server.New(connectionAddress)
 
 	server.OnNewClient(func(c *tcp_server.Client) {
