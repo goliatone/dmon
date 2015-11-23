@@ -66,6 +66,7 @@ Run `newgrp docker` to recognize the new group or log out and log in to have the
 
 Add upstart `dmon.conf` file. Read more on the [upstart cookbook][uc]
 
+Check if conf file is ok:
 
 Add logrotate conf file, `/etc/logrotate.d/dmon`:
 
@@ -79,18 +80,13 @@ Add logrotate conf file, `/etc/logrotate.d/dmon`:
     nocreate
 }
 ```
-Ensure `crond` is up and running all the time:
-```
-# chkconfig --list crond
-# chkconfig crond on
-```
 
-Else:
-```
-# /etc/init.d/crond start
-```
+Ensure your port is reachable from outside of the box, if you are on an EC2 instance add a rule to the security group of the machine.
+`dmon` listends on port **9386** by default:
 
-Ensure your port is reachable from outside.
+* port: 9386
+* protocol: tcp
+* Source: 0.0.0.0/0
 
 ## Development
 If you need to build the binary on Ubuntu:
@@ -113,6 +109,27 @@ $ git clone https://github.com/goliatone/dmon.git
 
 <!--
 https://github.com/go-godo/godo
+s3cmd put dmon s3://vecna.io
+
+http://upstart.ubuntu.com/getting-started.html
 -->
 
 [uc]: http://upstart.ubuntu.com/cookbook/#pre-start-example-debian-and-ubuntu-specific
+
+
+
+->
+mkdir /opt/dmon/
+
+sudo install
+
+```shell
+#!/bin/sh
+
+wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon
+wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.conf
+wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.log
+
+mv dmon /opt/dmon
+cp dmon.conf /etc/init/dmon.conf
+```
