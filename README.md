@@ -136,7 +136,7 @@ $ git clone https://github.com/goliatone/dmon.git
 
 <!--
 https://github.com/go-godo/godo
-s3cmd put dmon s3://vecna.io
+s3cmd put dmon s3://com.goliatone.dmon
 
 http://upstart.ubuntu.com/getting-started.html
 -->
@@ -162,18 +162,11 @@ wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.log
 
 chmod +x /opt/dmon
 
-cp dmon.conf /etc/init/dmon.conf
-cp dmon.log /etc/logrotate.d/dmon
-#we should do some sort of syntax check:
-#init-checkconf /etc/init/dmon.conf => File /etc/init/dmon.conf: syntax ok
-output="$(init-checkconf /etc/init/dmon.conf)"
-expected=File /etc/init/dmon.conf
-if [[ $output == $expected]]; then
-    echo "Staring service..."
-    initctl start dmon
-else
-    echo "Unable to start service..."
-fi
+cp /opt/dmon.conf /etc/init/dmon.conf
+cp /opt/dmon.log /etc/logrotate.d/dmon
+
+initctl start dmon
+
 ```
 
 
@@ -184,4 +177,5 @@ fi
 s3cmd put conf/dmon s3://com.goliatone.dmon/ubuntu/dmon --acl-public
 s3cmd put conf/dmon.log s3://com.goliatone.dmon/ubuntu/dmon.log --acl-public
 s3cmd put conf/dmon.conf s3://com.goliatone.dmon/ubuntu/dmon.conf --acl-public
+s3cmd put conf/install s3://com.goliatone.dmon/ubuntu/install --acl-public
 ```
