@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	inspectRunning = "docker inspect --format={{.State.Running}} "
-	inspectStarted = "docker inspect --format={{.State.StartedAt}} "
-	inspectNetwork = "docker inspect --format={{.NetworkSettings.IPAddress}} "
+	inspectRunning = "docker inspect --format={{.State.Running}} %s"
+	inspectStarted = "docker inspect --format={{.State.StartedAt}} %s"
+	inspectNetwork = "docker inspect --format={{.NetworkSettings.IPAddress}} %s"
 )
 
 //Payload struct
@@ -57,9 +57,8 @@ func Exec(arguments string) (Response, error) {
 		return Response{}, err
 	}
 
-	//wat
-	out, err := exec.Command("sh", "-c",
-		inspectRunning+payload.Target).CombinedOutput()
+	cmd := fmt.Sprintf(inspectRunning, payload.Target)
+	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 
 	if err != nil {
 		log.Println(err)
@@ -80,18 +79,8 @@ func Exec(arguments string) (Response, error) {
 		return Response{Success: false, StatusCode: 2, Message: message}, nil
 	}
 
-	out, err = exec.Command("sh", "-c",
-		inspectStarted+payload.Target).CombinedOutput()
-
-	if err != nil {
-		errorMessage := fmt.Sprintf("Unknown error: %s", err)
-		return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
-	}
-
-	network := byteToString(out)
-
-	out, err = exec.Command("sh", "-c",
-		inspectNetwork+payload.Target).CombinedOutput()
+	cmd = fmt.Sprintf(inspectStarted, payload.Target)
+	out, err = exec.Command("sh", "-c", cmd).CombinedOutput()
 
 	if err != nil {
 		errorMessage := fmt.Sprintf("Unknown error: %s", err)
@@ -99,7 +88,17 @@ func Exec(arguments string) (Response, error) {
 	}
 
 	started := byteToString(out)
-	message := fmt.Sprintf("OK - The container \"%s\" is running. IP: %s, StartedAt: %s", payload.Target, started, network)
+
+	cmd = fmt.Sprintf(inspectNetwork, payload.Target)
+	out, err = exec.Command("sh", "-c", cmd).CombinedOutput()
+
+	if err != nil {
+		errorMessage := fmt.Sprintf("Unknown error: %s", err)
+		return Response{Success: false, StatusCode: 4, Message: errorMessage}, nil
+	}
+
+	network := byteToString(out)
+	message := fmt.Sprintf("OK - The container \"%s\" is running. IP: %s, StartedAt: %s", payload.Target, network, started)
 
 	return Response{Success: true, StatusCode: 0, Message: message}, nil
 }
