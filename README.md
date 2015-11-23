@@ -88,6 +88,33 @@ Ensure your port is reachable from outside of the box, if you are on an EC2 inst
 * protocol: tcp
 * Source: 0.0.0.0/0
 
+Copy the `dmon` binary in `/opt/`, copy the upstart config file into `/etc/init/dmon.conf`.
+Check the syntax of the conf, and start the service:
+
+
+```
+$ init-checkconf /etc/init/dmon.conf
+File /etc/init/dmon.conf: syntax ok
+$ sudo initctl start dmon
+```
+
+>initctl: Rejected send message, 1 matched rules; type="method_call", sender=":1.9" (uid=1000 pid=2379 comm="initctl reload-configuration ") interface="com.ubuntu.Upstart0_6" member="ReloadConfiguration" error name="(unset)" requested_reply="0" destination="com.ubuntu.Upstart" (uid=0 pid=1 comm="/sbin/init")
+
+This error is usually fixed by running the `initctl` command with `sudo`.
+
+If you run `initctl status dmon` you should see something along the lines of:
+
+```
+dmon start/running, process 31128`
+```
+
+Once you have the service running, then you can test it from the CLI:
+
+```
+$ nc 192.168.0.4 9386
+```
+Then just type your command `docker:<containerId>`.
+
 ## Development
 If you need to build the binary on Ubuntu:
 
@@ -119,6 +146,7 @@ http://upstart.ubuntu.com/getting-started.html
 
 
 ->
+
 mkdir /opt/dmon/
 
 sudo install
@@ -126,10 +154,34 @@ sudo install
 ```shell
 #!/bin/sh
 
-wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon
-wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.conf
-wget wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.log
+cd /opt
 
-mv dmon /opt/dmon
+wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon
+wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.conf
+wget https://s3.amazonaws.com/com.goliatone.dmon/ubuntu/dmon.log
+
+chmod +x /opt/dmon
+
 cp dmon.conf /etc/init/dmon.conf
+cp dmon.log /etc/logrotate.d/dmon
+#we should do some sort of syntax check:
+#init-checkconf /etc/init/dmon.conf => File /etc/init/dmon.conf: syntax ok
+output="$(init-checkconf /etc/init/dmon.conf)"
+expected=File /etc/init/dmon.conf
+if [[ $output == $expected]]; then
+    echo "Staring service..."
+    initctl start dmon
+else
+    echo "Unable to start service..."
+fi
+```
+
+
+
+## Publish
+
+```
+s3cmd put conf/dmon s3://com.goliatone.dmon/ubuntu/dmon --acl-public
+s3cmd put conf/dmon.log s3://com.goliatone.dmon/ubuntu/dmon.log --acl-public
+s3cmd put conf/dmon.conf s3://com.goliatone.dmon/ubuntu/dmon.conf --acl-public
 ```
