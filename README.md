@@ -56,14 +56,15 @@ ed8bc298f850        b8e8e082f4e5        "node app.js"       About an hour ago   
 ```
 
 ## Deployment
-Modify docker to run without sudo, on EC2 box:
+To run `docker` without `sudo` command.
 
+Create the `docker` group and add your user:
 ```
-sudo usermod -a -G docker ec2-user
+sudo usermod -a -G docker ubuntu
 ```
+Run `newgrp docker` to recognize the new group or log out and log in to have the change applied to groups.
 
 Add upstart `dmon.conf` file. Read more on the [upstart cookbook][uc]
-
 
 
 Add logrotate conf file, `/etc/logrotate.d/dmon`:
@@ -87,6 +88,27 @@ Ensure `crond` is up and running all the time:
 Else:
 ```
 # /etc/init.d/crond start
+```
+
+Ensure your port is reachable from outside.
+
+## Development
+If you need to build the binary on Ubuntu:
+
+
+```
+# apt-get install golang
+```
+
+Set `GOPATH`:
+```
+$ export GOPATH=/opt/GO
+```
+
+You might need to `apt-get install git` and some other dependencies.
+
+```
+$ git clone https://github.com/goliatone/dmon.git
 ```
 
 <!--
