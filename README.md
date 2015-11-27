@@ -146,6 +146,8 @@ https://github.com/go-godo/godo
 s3cmd put dmon s3://com.goliatone.dmon
 
 http://upstart.ubuntu.com/getting-started.html
+https://www.digitalocean.com/community/tutorials/the-upstart-event-system-what-it-is-and-how-to-use-it
+https://serversforhackers.com/video/process-monitoring-with-upstart
 -->
 
 [uc]: http://upstart.ubuntu.com/cookbook/#pre-start-example-debian-and-ubuntu-specific
