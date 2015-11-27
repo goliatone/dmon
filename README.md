@@ -1,11 +1,13 @@
+# dmon
 
-## TODO
+Simple TCP server to remotely check container health status. 
 
-Handle multiple containers per command:
+Your service should connect over TCP and send a challenge with `docker:<container|image>` to which `dmon` will answer with the string "OK\r" if the container is running or "KO\r" if the container is not running.
 
-```
-docker:container1|container2|container3|container4
-```
+Under the hood `dmon` uses `docker inspect` to figure out if a container is running or not.
+
+---
+
 
 ## Development
 Install dependencies.
@@ -187,4 +189,13 @@ s3cmd put conf/dmon s3://com.goliatone.dmon/ubuntu/dmon --acl-public
 s3cmd put conf/dmon.log s3://com.goliatone.dmon/ubuntu/dmon.log --acl-public
 s3cmd put conf/dmon.conf s3://com.goliatone.dmon/ubuntu/dmon.conf --acl-public
 s3cmd put conf/install s3://com.goliatone.dmon/ubuntu/install --acl-public
+```
+
+
+## Roadmap
+
+Handle multiple containers per command:
+
+```
+docker:container1|container2|container3|container4
 ```
